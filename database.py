@@ -1,33 +1,24 @@
 import sqlite3
 
-# Подключение к базе данных (если файла базы данных не существует, он будет создан)
-conn = sqlite3.connect('Parking.db')
+class Database:
+    def __init__(self):
+        # Подключение к базе данных
+        self.conn = sqlite3.connect('reminders.db', check_same_thread=False)
+        # Курсор взаимодействия с БД
+        self.cursor = self.conn.cursor()
 
-# Создание курсора для выполнения SQL-запросов
-cursor = conn.cursor()
+    def create_table(self):
+        # Создание таблицы, если она не существует
+        self.cursor.execute('''
+        CREATE TABLE IF NOT EXISTS reminders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chat_id INTEGER NOT NULL,
+            reminder_time TEXT NOT NULL,
+            reminder_message TEXT NOT NULL
+        )
+        ''')
+        self.conn.commit()
 
-# Создание таблицы
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
-        remind_time TEXT,
-        remind_text TEXT
-    )
-''')
-
-# # Вставка данных
-# cursor.execute('''
-#     INSERT INTO users (name, age) VALUES (?, ?)
-# ''', ('Alice', 30))
-#
-# # Получение данных
-# cursor.execute('SELECT * FROM users')
-# users = cursor.fetchall()
-#
-# print(users)  # [(1, 'Alice', 30)]
-#
-# # Сохранение (commit) изменений
-# conn.commit()
-
-# Закрытие соединения
-conn.close()
+    # Метод для закрытия соединения
+    def close_connection(self):
+        self.conn.close()
