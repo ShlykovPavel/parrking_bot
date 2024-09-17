@@ -14,7 +14,7 @@ def check_reminders(bot, db_cursor):
             chat_id, reminder_message = reminder
             bot.send_message(chat_id, reminder_message)
 
-def run_scheduler(self):
+def run_scheduler():
         while True:
             schedule.run_pending()
             time.sleep(1)
