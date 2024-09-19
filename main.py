@@ -31,7 +31,7 @@ def run_bot():
     bot.infinity_polling()
 
 if __name__ == '__main__':
-    scheduler_thread = threading.Thread(target=run_scheduler)
+    scheduler_thread = threading.Thread(target=run_scheduler, args=(bot, db_cursor))
     bot_thread = threading.Thread(target=run_bot)
 
     scheduler_thread.start()

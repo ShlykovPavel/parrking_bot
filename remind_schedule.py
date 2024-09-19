@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+from functools import partial
 
 import schedule
 
@@ -14,7 +15,10 @@ def check_reminders(bot, db_cursor):
             chat_id, reminder_message = reminder
             bot.send_message(chat_id, reminder_message)
 
-def run_scheduler():
-        while True:
-            schedule.run_pending()
-            time.sleep(1)
+def run_scheduler(bot, db_cursor):
+    # Используем partial для передачи аргументов в check_reminders
+    schedule.every().day.at("09:00").do(partial(check_reminders, bot, db_cursor))
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
