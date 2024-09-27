@@ -19,11 +19,11 @@ db_cursor = db.cursor
 
 bot_comands = Bot_commands(bot, db, db_cursor)
 bot_comands.register_handlers()
-
+reminder_worker = check_reminders(bot, db_cursor)
 
 
 # Планировщик задачи для проверки напоминаний каждую минуту
-schedule.every().minute.do(check_reminders)
+# schedule.every().minute.do(reminder_worker)
 
 
 # Запуск бота в отдельном потоке
