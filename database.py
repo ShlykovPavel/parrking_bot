@@ -7,7 +7,7 @@ class Database:
         # Курсор взаимодействия с БД
         self.cursor = self.conn.cursor()
 
-    def create_table(self):
+    def create_reminders_table(self):
         # Создание таблицы, если она не существует
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS reminders (
@@ -19,6 +19,17 @@ class Database:
         ''')
         self.conn.commit()
 
+    def create_users_table(self):
+        # Создание таблицы, если она не существует
+        self.cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chat_id INTEGER NOT NULL,
+            username TEXT NOT NULL,
+            vehicle_model TEXT NOT NULL,
+            vehicle_number TEXT NOT NULL
+        )''')
+        self.conn.commit()
     # Метод для закрытия соединения
     def close_connection(self):
         self.conn.close()
