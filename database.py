@@ -6,6 +6,8 @@ class Database:
         self.conn = sqlite3.connect('reminders.db', check_same_thread=False)
         # Курсор взаимодействия с БД
         self.cursor = self.conn.cursor()
+        self.create_reminders_table()
+        self.create_users_table()
 
     def create_reminders_table(self):
         # Создание таблицы, если она не существует
