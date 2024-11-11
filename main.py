@@ -11,7 +11,7 @@ from database import Database
 from remind_schedule import check_reminders, run_scheduler
 
 # Инициализация бота
-bot_api = '6878869046:AAHk5Tq4VdBAf1qc-YjfJ04-qpCBQtjo2xk'
+bot_api = '7748589014:AAHjsa6H2Ur7X9rOohjywJEsg1YqDRXOUyE'
 bot = telebot.TeleBot(bot_api)
 
 
