@@ -25,8 +25,10 @@ class Database:
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS parking_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chat_id INTEGER NOT NULL,
+            vehicle_model TEXT NOT NULL,
+            vehicle_number TEXT NOT NULL,
             username TEXT NOT NULL,
-            is_park_today INTEGER NOT NULL,
             date_parking TEXT NOT NULL,
             FOREIGN KEY (username) REFERENCES users (username)
         )
@@ -39,6 +41,7 @@ class Database:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             chat_id INTEGER NOT NULL,
             message TEXT NOT NULL,
+            reminder_time TEXT NOT NULL,
             FOREIGN KEY (chat_id) REFERENCES users (chat_id)
         )''')
         self.conn.commit()

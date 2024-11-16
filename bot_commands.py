@@ -102,11 +102,11 @@ class Bot_commands:
         def add_reminder(message):
             chat_id = message.chat.id
             try:
-                # Вызов функции добавления напоминания сразу после команды
-                self.reminder_functions.add_reminder(chat_id)
+                self.bot.send_message(chat_id, "Пожалуйста, введите время в формате HH:MM с шагом в 30 минут для добавления напоминания.")
+                self.bot.register_next_step_handler(message, lambda message: self.reminder_functions.add_reminder(chat_id, message.text))
             except Exception as e:
-                logging.error(f"Ошибка добавления напоминания: {e}")
-                self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
+                    logging.error(f"Ошибка добавления напоминания: {e}")
+                    self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
 
         @self.bot.message_handler(commands=['delete_reminder'])
         def delete_reminder(message):
@@ -117,3 +117,22 @@ class Bot_commands:
             except Exception as e:
                 logging.error(f"Ошибка добавления напоминания: {e}")
                 self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
+
+        @self.bot.callback_query_handler(func=lambda call: call.data.startswith('reminder_'))
+        def reminder_handler(call):
+            chat_id = call.message.chat.id
+            try:
+                # Извлекаем информацию из callback_data
+                action, chat_id = call.data.split(':')
+                chat_id = int(chat_id)
+
+                if action == "reminder_yes":
+                    self.reminder_functions.add_parking_record(chat_id)
+
+                elif action == "reminder_no":
+                    self.bot.send_message(chat_id, "Вы ответили 'Нет'. Спасибо за ответ.")
+                # Удалим клавиатуру после нажатия
+                self.bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                                              reply_markup=None)
+            except Exception as e:
+                logging.error(f"Ошибка обработки ответа на напоминание: {e}")

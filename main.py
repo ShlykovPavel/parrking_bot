@@ -1,42 +1,37 @@
-import schedule
 import telebot
-from telebot import types
-import sqlite3
-from datetime import datetime
-import time
 import threading
-
+import sqlite3
 from bot_commands import Bot_commands
-from database import Database
-from remind_schedule import check_reminders, run_scheduler
+from reminder.remind_schedule import run_scheduler  # Импортируйте функцию планировщика
 
 # Инициализация бота
 bot_api = '7748589014:AAHjsa6H2Ur7X9rOohjywJEsg1YqDRXOUyE'
 bot = telebot.TeleBot(bot_api)
 
-
+# Создание подключения к базе данных
+conn = sqlite3.connect('reminders.db', check_same_thread=False)
+db_cursor = conn.cursor()
 
 user_data = {}
-bot_comands = Bot_commands(bot, user_data)
-bot_comands.register_handlers()
-# reminder_worker = check_reminders(bot, db_cursor)
+bot_commands = Bot_commands(bot, user_data)
+bot_commands.register_handlers()
 
-
-# Планировщик задачи для проверки напоминаний каждую минуту
-# schedule.every().minute.do(reminder_worker)
-
-
-# Запуск бота в отдельном потоке
+# Функция для запуска бота
 def run_bot():
+    print("Запуск бота...")
     bot.infinity_polling()
+    print("Бот завершён")
 
 if __name__ == '__main__':
-    # scheduler_thread = threading.Thread(target=run_scheduler, args=(bot))
+    # Создание потоков для бота и планировщика
     bot_thread = threading.Thread(target=run_bot)
+    scheduler_thread = threading.Thread(target=run_scheduler, args=(bot, db_cursor))
 
-    # scheduler_thread.start()
+    # Запуск потоков
     bot_thread.start()
+    scheduler_thread.start()
 
-    # scheduler_thread.join()
-    # bot_thread.join()
-    print("Бот запущен")
+    # Печать сообщения о запуске
+    print("Бот и планировщик запущены")
+
+    # Удалили join(), чтобы не блокировать основной поток
