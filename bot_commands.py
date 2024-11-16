@@ -1,7 +1,7 @@
 import logging
 
 from telebot import types
-
+from reminder.reminder_functions import reminder_functions
 from database import Database
 from users.users_functions import users_functions
 
@@ -19,6 +19,7 @@ class Bot_commands:
         self.db = Database()
         self.user_data = user_data
         self.users_functions = users_functions(self.bot, user_data)
+        self.reminder_functions = reminder_functions(self.bot, user_data)
 
     def register_handlers(self):
         # Обработчик команды /start
@@ -76,7 +77,6 @@ class Bot_commands:
                         user_name = user[0]  # Получаем ФИО пользователя
                         markup.add(
                             types.InlineKeyboardButton(user_name, callback_data=f'username_{user_name}'))
-                        logging.info(f"username_{user_name}")
 
                     # Отправляем сообщение с выбором департамента
                     self.bot.send_message(chat_id, 'Выберите пользователя которого хотите удалить', reply_markup=markup)
@@ -97,3 +97,23 @@ class Bot_commands:
             except Exception as e:
                 logging.error(f"Ошибка при удалении пользователя: {e}")
                 self.bot.send_message(chat_id, "Произошла ошибка при удалении пользователя")
+
+        @self.bot.message_handler(commands=['add_reminder'])
+        def add_reminder(message):
+            chat_id = message.chat.id
+            try:
+                # Вызов функции добавления напоминания сразу после команды
+                self.reminder_functions.add_reminder(chat_id)
+            except Exception as e:
+                logging.error(f"Ошибка добавления напоминания: {e}")
+                self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
+
+        @self.bot.message_handler(commands=['delete_reminder'])
+        def delete_reminder(message):
+            chat_id = message.chat.id
+            try:
+                # Вызов функции добавления напоминания сразу после команды
+                self.reminder_functions.delete_reminder(chat_id)
+            except Exception as e:
+                logging.error(f"Ошибка добавления напоминания: {e}")
+                self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
