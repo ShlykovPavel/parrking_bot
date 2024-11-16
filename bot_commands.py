@@ -123,7 +123,7 @@ class Bot_commands:
             chat_id = call.message.chat.id
             try:
                 # Извлекаем информацию из callback_data
-                action, chat_id = call.data.split(':')
+                action = call.data
                 chat_id = int(chat_id)
 
                 if action == "reminder_yes":
