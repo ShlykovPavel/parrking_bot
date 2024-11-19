@@ -9,7 +9,7 @@ bot_api = '7748589014:AAHjsa6H2Ur7X9rOohjywJEsg1YqDRXOUyE'
 bot = telebot.TeleBot(bot_api)
 
 # Создание подключения к базе данных
-conn = sqlite3.connect('reminders.db', check_same_thread=False)
+conn = sqlite3.connect('parking.db', check_same_thread=False)
 db_cursor = conn.cursor()
 
 user_data = {}

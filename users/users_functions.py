@@ -1,7 +1,7 @@
 import logging
 
 from users.db_users_functions import db_users_functions
-
+from reminder.reminder_functions import reminder_functions
 logging.basicConfig(
     level=logging.INFO,  # Уровень логов (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     format='%(asctime)s - %(levelname)s - %(message)s',  # Формат логов
@@ -14,6 +14,7 @@ class users_functions:
         self.bot = bot
         self.db = db_users_functions()
         self.user_data = user_data
+        self.reminder_functions = reminder_functions(self.bot, user_data)
 
     def check_users(self, chat_id):
         try:
@@ -97,7 +98,8 @@ class users_functions:
                 self.db.add_user(chat_id=chat_id, username=self.user_data[chat_id]['username'],
                                  vehicle_model=self.user_data[chat_id]['vehicle_model'],
                                  vehicle_number=self.user_data[chat_id]['vehicle_number'])
-                return self.bot.send_message(chat_id, "Пользователь успешно добавлен.")
+                self.bot.send_message(chat_id, "Пользователь успешно добавлен. Введите время для напоминания в формате HH:MM, с шагом в 30 минут. Например: 10:00 или 10:30")
+                return self.bot.register_next_step_handler(message, lambda msg: self.reminder_functions.add_reminder(chat_id, msg.text))
         except Exception as e:
             logging.error(f"Ошибка записи номера автомобиля: {e}")
             return self.bot.send_message(chat_id, "Ошибка записи номера автомобиля")
