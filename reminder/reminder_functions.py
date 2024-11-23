@@ -8,6 +8,7 @@ class reminder_functions:
         self.bot = bot
         self.user_data = user_data
         self.db = db_reminder_functions()
+        self.time_validator = Validator(bot)
 
     def add_reminder(self, chat_id, reminder_time=None):
         logging.info(f"Добавление напоминания: chat_id={chat_id}")
@@ -15,14 +16,17 @@ class reminder_functions:
         # Если время не передано, то запросим у пользователя
         if reminder_time is None:
             self.bot.send_message(chat_id, "Введите время для напоминания в формате HH:MM")
-            self.bot.register_next_step_handler_by_chat_id(chat_id, self.request_reminder_time)
+            self.bot.register_next_step_handler_by_chat_id(
+                chat_id,
+                lambda message: self.time_validator.request_new_time(chat_id, callback_func=self.add_reminder)
+            )
             return
 
         try:
             # Проверяем формат времени
-            if not validate_time_format(reminder_time):
+            if not self.time_validator.validate_time_format(reminder_time):
                 self.bot.send_message(chat_id, "Некорректный формат времени. Попробуйте ещё раз (формат HH:MM)")
-                self.bot.register_next_step_handler_by_chat_id(chat_id, self.request_reminder_time)
+                self.time_validator.request_new_time(chat_id, callback_func=self.add_reminder)
                 return
 
             # Добавляем напоминание в базу данных
@@ -48,10 +52,3 @@ class reminder_functions:
             logging.error(f"Ошибка удаления напоминания: {e}")
             return self.bot.send_message(chat_id, "Ошибка удаления напоминания: " + str(e))
 
-    def add_parking_record(self, chat_id):
-        try:
-            self.db.add_parking_record(chat_id)
-            return self.bot.send_message(chat_id, "Запись успешно добавлена")
-        except Exception as e:
-            logging.error(f"Ошибка добавления записи: {e}")
-            return self.bot.send_message(chat_id, "Ошибка добавления записи: " + str(e))

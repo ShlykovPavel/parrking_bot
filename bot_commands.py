@@ -1,6 +1,6 @@
 import logging
-
 from telebot import types
+from parking_record.parking_functions import parking_functions
 from reminder.reminder_functions import reminder_functions
 from database import Database
 from users.users_functions import users_functions
@@ -20,6 +20,7 @@ class Bot_commands:
         self.user_data = user_data
         self.users_functions = users_functions(self.bot, user_data)
         self.reminder_functions = reminder_functions(self.bot, user_data)
+        self.parking_functions = parking_functions(self.bot, user_data)
 
     def register_handlers(self):
         # Обработчик команды /start
@@ -58,10 +59,13 @@ class Bot_commands:
             elif call.data == "model":
                 self.bot.send_message(chat_id, "Введите свою марку автомобиля")
                 self.bot.register_next_step_handler(call.message,
-                                                    lambda msg: self.users_functions.get_vehicle_model(msg, is_update=True))
+                                                    lambda msg: self.users_functions.get_vehicle_model(msg,
+                                                                                                       is_update=True))
             elif call.data == "number":
                 self.bot.send_message(chat_id, "Введите свой номер автомобиля")
-                self.bot.register_next_step_handler(call.message, lambda msg: self.users_functions.get_vehicle_number(msg, is_update=True))
+                self.bot.register_next_step_handler(call.message,
+                                                    lambda msg: self.users_functions.get_vehicle_number(msg,
+                                                                                                        is_update=True))
 
         @self.bot.message_handler(commands=['delete_user'])
         def delete_user(message):
@@ -102,11 +106,14 @@ class Bot_commands:
         def add_reminder(message):
             chat_id = message.chat.id
             try:
-                self.bot.send_message(chat_id, "Пожалуйста, введите время в формате HH:MM с шагом в 30 минут для добавления напоминания.")
-                self.bot.register_next_step_handler(message, lambda message: self.reminder_functions.add_reminder(chat_id, message.text))
+                self.bot.send_message(chat_id,
+                                      "Пожалуйста, введите время в формате HH:MM с шагом в 30 минут для добавления напоминания.")
+                self.bot.register_next_step_handler(message,
+                                                    lambda message: self.reminder_functions.add_reminder(chat_id,
+                                                                                                         message.text))
             except Exception as e:
-                    logging.error(f"Ошибка добавления напоминания: {e}")
-                    self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
+                logging.error(f"Ошибка добавления напоминания: {e}")
+                self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
 
         @self.bot.message_handler(commands=['delete_reminder'])
         def delete_reminder(message):
@@ -127,12 +134,24 @@ class Bot_commands:
                 chat_id = int(chat_id)
 
                 if action == "reminder_yes":
-                    self.reminder_functions.add_parking_record(chat_id)
+                    self.parking_functions.reminder_add_parking_record(chat_id)
 
                 elif action == "reminder_no":
                     self.bot.send_message(chat_id, "Вы ответили 'Нет'. Спасибо за ответ.")
                 # Удалим клавиатуру после нажатия
                 self.bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                                              reply_markup=None)
+                                                   reply_markup=None)
             except Exception as e:
                 logging.error(f"Ошибка обработки ответа на напоминание: {e}")
+
+        @self.bot.message_handler(commands=['add_parking_record'])
+        def add_parking_record(message):
+            chat_id = message.chat.id
+            try:
+                self.bot.send_message(chat_id, "Пожалуйста, введите дату в формате День.Месяц.Год")
+                self.bot.register_next_step_handler(message,
+                                                    lambda message: self.parking_functions.manual_add_parking_record(
+                                                        chat_id, message.text))
+            except Exception as e:
+                logging.error(f"Ошибка добавления записи: {e}")
+                self.bot.send_message(chat_id, "Ошибка добавления записи: " + str(e))
