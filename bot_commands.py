@@ -118,12 +118,32 @@ class Bot_commands:
         @self.bot.message_handler(commands=['delete_reminder'])
         def delete_reminder(message):
             chat_id = message.chat.id
+            reminders = self.reminder_functions.get_reminders(chat_id)
+            if reminders is not False:
+                # Создаем Inline клавиатуру
+                markup = types.InlineKeyboardMarkup()
+
+                # Для каждого напоминания создаем кнопку
+                for reminder in reminders:
+                    reminder_time = reminder[0]  # Получаем время напоминания
+                    markup.add(
+                        types.InlineKeyboardButton(reminder_time, callback_data=f'time_{reminder_time}'))
+
+                # Отправляем сообщение с выбором напоминания
+                self.bot.send_message(chat_id, 'Выберите напоминание которое хотите удалить', reply_markup=markup)
+            else:
+                self.bot.send_message(chat_id, "Вы ещё не добавили напоминания. Пожалуйста, используйте команду /add_reminder")
+
+        @self.bot.callback_query_handler(func=lambda call: call.data.startswith('time_'))
+        def delete_reminder_from_db(call):
+            chat_id = call.message.chat.id
+            reminder_time = call.data.split('_')[1]
             try:
-                # Вызов функции добавления напоминания сразу после команды
-                self.reminder_functions.delete_reminder(chat_id)
+                self.reminder_functions.delete_reminder(chat_id, reminder_time)
+                self.bot.send_message(chat_id, "Напоминание успешно удалено")
             except Exception as e:
-                logging.error(f"Ошибка добавления напоминания: {e}")
-                self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))
+                logging.error(f"Ошибка при удалении напоминания: {e}")
+                self.bot.send_message(chat_id, f"Произошла ошибка при удалении напоминания + {e}")
 
         @self.bot.callback_query_handler(func=lambda call: call.data.startswith('reminder_'))
         def reminder_handler(call):

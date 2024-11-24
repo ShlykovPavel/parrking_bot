@@ -49,12 +49,19 @@ class reminder_functions:
         # Попробуем добавить напоминание с введённым временем
         self.add_reminder(chat_id, reminder_time)
 
-    def delete_reminder(self, chat_id):
+    def delete_reminder(self, chat_id, time):
         logging.info(f"Удаление напоминания: chat_id={chat_id}")
         try:
-            self.db.delete_reminder(chat_id)
-            return self.bot.send_message(chat_id, "Напоминание успешно удалено")
+            self.db.delete_reminder(chat_id, time)
+            return True
         except Exception as e:
             logging.error(f"Ошибка удаления напоминания: {e}")
-            return self.bot.send_message(chat_id, "Ошибка удаления напоминания: " + str(e))
+            return self.bot.send_message(chat_id, str(e))
 
+    def get_reminders(self, chat_id):
+        logging.info(f"Получение напоминаний: chat_id={chat_id}")
+        try:
+            return self.db.get_all_user_reminders(chat_id)
+        except Exception as e:
+            logging.error(f"Ошибка получения напоминаний: {e}")
+            return self.bot.send_message(chat_id, "Ошибка получения напоминаний: " + str(e))

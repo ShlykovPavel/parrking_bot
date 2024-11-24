@@ -23,14 +23,14 @@ class db_reminder_functions(Database):
             logging.error(f"Ошибка добавления напоминания в БД: {e}")
             raise Exception(f"{e}")
 
-    def delete_reminder(self, chat_id):
+    def delete_reminder(self, chat_id, time):
         try:
-            self.db_cursor.execute('DELETE FROM reminders WHERE chat_id = ?', (chat_id,))
+            self.db_cursor.execute('DELETE FROM reminders WHERE chat_id = ? AND reminder_time = ?', (chat_id, time))
             self.conn.commit()
             return True
         except Exception as e:
             logging.error(f"Ошибка удаления напоминания из БД: {e}")
-            return False
+            raise Exception(f"{e}")
 
     def check_reminder_time(self, chat_id, time):
         try:
@@ -39,3 +39,11 @@ class db_reminder_functions(Database):
         except Exception as e:
             logging.error(f"Такое время напоминания уже есть : {e}")
             raise Exception("Ошибка проверки времени напоминания: " + str(e))
+
+    def get_all_user_reminders(self, chat_id):
+        try:
+            result = self.db_cursor.execute('SELECT reminder_time FROM reminders WHERE chat_id = ?', (chat_id,)).fetchall()
+            return result
+        except Exception as e:
+            logging.error(f"Ошибка получения напоминаний: {e}")
+            raise Exception("Ошибка получения напоминаний: " + str(e))
