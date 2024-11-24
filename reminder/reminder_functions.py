@@ -53,7 +53,7 @@ class reminder_functions:
         logging.info(f"Удаление напоминания: chat_id={chat_id}")
         try:
             self.db.delete_reminder(chat_id, time)
-            return True
+            return self.bot.send_message(chat_id, "Напоминание успешно удалено")
         except Exception as e:
             logging.error(f"Ошибка удаления напоминания: {e}")
             return self.bot.send_message(chat_id, str(e))

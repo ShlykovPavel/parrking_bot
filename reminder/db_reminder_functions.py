@@ -25,6 +25,9 @@ class db_reminder_functions(Database):
 
     def delete_reminder(self, chat_id, time):
         try:
+            not_exist_time = self.check_reminder_time(chat_id, time)
+            if not not_exist_time:
+                raise ValueError("Записи о напоминании не существует")
             self.db_cursor.execute('DELETE FROM reminders WHERE chat_id = ? AND reminder_time = ?', (chat_id, time))
             self.conn.commit()
             return True
