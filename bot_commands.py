@@ -1,4 +1,6 @@
 import logging
+import os
+
 from telebot import types
 from parking_record.parking_functions import parking_functions
 from reminder.reminder_functions import reminder_functions
@@ -132,7 +134,8 @@ class Bot_commands:
                 # Отправляем сообщение с выбором напоминания
                 self.bot.send_message(chat_id, 'Выберите напоминание которое хотите удалить', reply_markup=markup)
             else:
-                self.bot.send_message(chat_id, "Вы ещё не добавили напоминания. Пожалуйста, используйте команду /add_reminder")
+                self.bot.send_message(chat_id,
+                                      "Вы ещё не добавили напоминания. Пожалуйста, используйте команду /add_reminder")
 
         @self.bot.callback_query_handler(func=lambda call: call.data.startswith('time_'))
         def delete_reminder_from_db(call):
@@ -174,3 +177,33 @@ class Bot_commands:
             except Exception as e:
                 logging.error(f"Ошибка добавления записи: {e}")
                 self.bot.send_message(chat_id, "Ошибка добавления записи: " + str(e))
+
+        @self.bot.message_handler(commands=['get_table'])
+        def get_table(message):
+            chat_id = message.chat.id
+
+            def ask_month(message):
+                self.bot.send_message(chat_id, "Введите номер месяца в формате ММ")
+                self.bot.register_next_step_handler(message, ask_year)
+
+            def ask_year(message):
+                try:
+                    month = int(message.text)
+                    self.bot.send_message(chat_id, "Введите год в формате ГГГГ")
+                    self.bot.register_next_step_handler(message, lambda m: generate_report(m, month))
+                except ValueError:
+                    self.bot.send_message(chat_id, "Пожалуйста, введите правильный номер месяца.")
+                    ask_month(message)
+
+            def generate_report(message, month):
+                try:
+                    year = int(message.text)
+                    file_path = self.db.get_xlsx_from_db(month, year)
+                    with open(file_path, 'rb') as file:
+                        self.bot.send_document(chat_id, file)
+                    os.remove(file_path)
+                except ValueError:
+                    self.bot.send_message(chat_id, "Пожалуйста, введите правильный год.")
+                    ask_year(message)
+
+            ask_month(message)

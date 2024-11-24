@@ -1,4 +1,7 @@
 import sqlite3
+import pandas as pd
+import openpyxl
+
 
 class Database:
     def __init__(self):
@@ -48,3 +51,17 @@ class Database:
     # Метод для закрытия соединения
     def close_connection(self):
         self.conn.close()
+
+    def get_xlsx_from_db(self, month, year):
+        month_str = str(month).zfill(2)
+        year = str(year)
+        query = """
+            SELECT * FROM parking_records
+            WHERE substr(date_parking, 4, 2) = ?
+            AND substr(date_parking, 7, 4) = ?
+        """
+        df = pd.read_sql(query, self.conn, params=(month_str, year))
+        print(f"Результат sql запроса: {df}")
+        file_path = '/Users/pavelslykov/PycharmProjects/Parking_bot/result.xlsx'
+        df.to_excel(file_path, index=False)
+        return file_path

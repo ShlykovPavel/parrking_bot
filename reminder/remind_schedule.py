@@ -7,7 +7,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import holidays
 
 
-def check_reminders(bot, db_cursor,country_code='RU'):
+def check_reminders(bot, db_cursor, country_code='RU'):
     current_day = datetime.now().weekday()
 
     holidays_list = holidays.country_holidays(country_code)

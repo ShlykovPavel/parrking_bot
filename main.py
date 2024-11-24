@@ -20,7 +20,6 @@ bot_commands.register_handlers()
 def run_bot():
     print("Запуск бота...")
     bot.infinity_polling()
-    print("Бот завершён")
 
 if __name__ == '__main__':
     # Создание потоков для бота и планировщика
