@@ -38,4 +38,4 @@ class parking_functions:
         except Exception as e:
             # Ловим другие ошибки и логируем их
             logging.error(f"Ошибка добавления записи: {e}")
-            return self.bot.send_message(chat_id, "Ошибка добавления записи: " + str(e))
+            return self.bot.send_message(chat_id, str(e))
