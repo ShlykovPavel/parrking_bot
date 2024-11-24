@@ -140,7 +140,6 @@ class Bot_commands:
             reminder_time = call.data.split('_')[1]
             try:
                 self.reminder_functions.delete_reminder(chat_id, reminder_time)
-                # self.bot.send_message(chat_id, "Напоминание успешно удалено")
             except Exception as e:
                 logging.error(f"Ошибка при удалении напоминания: {e}")
                 self.bot.send_message(chat_id, f"Произошла ошибка при удалении напоминания + {e}")
