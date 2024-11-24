@@ -18,20 +18,26 @@ class reminder_functions:
             self.bot.send_message(chat_id, "Введите время для напоминания в формате HH:MM")
             self.bot.register_next_step_handler_by_chat_id(
                 chat_id,
-                lambda message: self.time_validator.request_new_time(chat_id, callback_func=self.add_reminder)
+                lambda message: self.add_reminder(chat_id, message.text)
             )
             return
 
         try:
             # Проверяем формат времени
-            if not self.time_validator.validate_time_format(reminder_time):
-                self.bot.send_message(chat_id, "Некорректный формат времени. Попробуйте ещё раз (формат HH:MM)")
-                self.time_validator.request_new_time(chat_id, callback_func=self.add_reminder)
-                return
+            self.time_validator.validate_time_format(reminder_time)
 
             # Добавляем напоминание в базу данных
             self.db.add_reminder(chat_id, reminder_time)
             self.bot.send_message(chat_id, "Напоминание успешно добавлено")
+
+        except ValidationError as ve:
+            logging.error(f"Ошибка добавления напоминания: {ve}")
+            self.bot.send_message(chat_id, str(ve))
+            self.bot.register_next_step_handler_by_chat_id(
+                chat_id,
+                lambda message: self.add_reminder(chat_id, message.text)
+            )
+            return
         except Exception as e:
             logging.error(f"Ошибка добавления напоминания: {e}")
             self.bot.send_message(chat_id, "Ошибка добавления напоминания: " + str(e))

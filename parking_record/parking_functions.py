@@ -19,17 +19,23 @@ class parking_functions:
 
     def manual_add_parking_record(self, chat_id, date):
         try:
-            is_valid, validation_message = self.time_validator.validate_date_format(date)
+            # Проверяем формат даты, теперь не возвращаем значение, а сразу выбрасываем исключение при ошибке
+            self.time_validator.validate_date_format(date)
 
-            if not is_valid:
-                self.bot.send_message(chat_id, validation_message)
-                self.bot.register_next_step_handler_by_chat_id(chat_id,
-                                                               lambda message: self.manual_add_parking_record(chat_id,
-                                                                                                              message.text))
-                return
-
+            # Если формат даты корректен, добавляем запись в базу данных
             self.db.add_parking_record(chat_id, date=date)
             return self.bot.send_message(chat_id, "Запись успешно добавлена")
+
+        except ValidationError as ve:
+            # Если произошла ошибка валидации, отправляем сообщение об ошибке и запрашиваем данные снова
+            self.bot.send_message(chat_id, str(ve))
+            self.bot.register_next_step_handler_by_chat_id(
+                chat_id,
+                lambda message: self.manual_add_parking_record(chat_id, message.text)
+            )
+            return
+
         except Exception as e:
+            # Ловим другие ошибки и логируем их
             logging.error(f"Ошибка добавления записи: {e}")
             return self.bot.send_message(chat_id, "Ошибка добавления записи: " + str(e))
