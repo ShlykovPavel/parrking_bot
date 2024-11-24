@@ -148,7 +148,7 @@ class Bot_commands:
         def add_parking_record(message):
             chat_id = message.chat.id
             try:
-                self.bot.send_message(chat_id, "Пожалуйста, введите дату в формате День.Месяц.Год")
+                self.bot.send_message(chat_id, "Пожалуйста, введите дату в формате ДД.ММ.ГГГГ")
                 self.bot.register_next_step_handler(message,
                                                     lambda message: self.parking_functions.manual_add_parking_record(
                                                         chat_id, message.text))
