@@ -2,10 +2,13 @@ import telebot
 import threading
 import sqlite3
 from bot_commands import Bot_commands
-from reminder.remind_schedule import run_scheduler  # Импортируйте функцию планировщика
+from reminder.remind_schedule import run_scheduler
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 # Инициализация бота
-bot_api = '7748589014:AAHjsa6H2Ur7X9rOohjywJEsg1YqDRXOUyE'
+bot_api = os.getenv('Bot_api')
 bot = telebot.TeleBot(bot_api)
 
 # Создание подключения к базе данных
