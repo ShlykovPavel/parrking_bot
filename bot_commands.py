@@ -57,17 +57,15 @@ class Bot_commands:
             if call.data == "name":
                 self.bot.send_message(chat_id, "Введите новое ФИО")
                 self.bot.register_next_step_handler(call.message,
-                                                    lambda msg: self.users_functions.get_name(msg, is_update=True))
+                                                    lambda msg: self.users_functions.update_name(msg))
             elif call.data == "model":
                 self.bot.send_message(chat_id, "Введите свою марку автомобиля")
                 self.bot.register_next_step_handler(call.message,
-                                                    lambda msg: self.users_functions.get_vehicle_model(msg,
-                                                                                                       is_update=True))
+                                                    lambda msg: self.users_functions.update_vehicle_model(msg))
             elif call.data == "number":
                 self.bot.send_message(chat_id, "Введите свой номер автомобиля")
                 self.bot.register_next_step_handler(call.message,
-                                                    lambda msg: self.users_functions.get_vehicle_number(msg,
-                                                                                                        is_update=True))
+                                                    lambda msg: self.users_functions.update_vehicle_number(msg))
 
         @self.bot.message_handler(commands=['delete_user'])
         def delete_user(message):
