@@ -75,7 +75,7 @@ class users_functions:
             logging.error(f"Ошибка записи модели автомобиля: {e}")
             return self.bot.send_message(chat_id, "Ошибка записи модели автомобиля")
 
-    def get_vehicle_number(self, message, is_update=False):
+    def get_vehicle_number(self, message):
         chat_id = message.chat.id
         logging.info(f"Получение номера: chat_id={chat_id}, vehicle_number={message.text}")
         try:
@@ -83,6 +83,7 @@ class users_functions:
             self.db.add_user(chat_id=chat_id, username=self.user_data[chat_id]['username'],
                              vehicle_model=self.user_data[chat_id]['vehicle_model'],
                              vehicle_number=self.user_data[chat_id]['vehicle_number'])
+            del self.user_data[chat_id]
             self.bot.send_message(chat_id,
                                   "Пользователь успешно добавлен. Введите время для напоминания в формате HH:MM, с шагом в 30 минут. Например: 10:00 или 10:30")
             return self.bot.register_next_step_handler(message,
@@ -101,10 +102,13 @@ class users_functions:
 
     def update_name(self, message):
         chat_id = message.chat.id
+        if chat_id not in self.user_data:
+            self.user_data[chat_id] = {}
         try:
             self.user_data[chat_id]['username'] = message.text
             self.db.update_user(chat_id=chat_id, username=self.user_data[chat_id]['username'])
             self.bot.send_message(chat_id, "Имя успешно обновлено.")
+            del self.user_data[chat_id]
 
         except Exception as e:
             logging.error(f"Ошибка обновления имени: {e}")
@@ -112,22 +116,26 @@ class users_functions:
 
     def update_vehicle_model(self, message):
         chat_id = message.chat.id
+        if chat_id not in self.user_data:
+            self.user_data[chat_id] = {}
         try:
             self.user_data[chat_id]['vehicle_model'] = message.text
             self.db.update_user(chat_id=chat_id, vehicle_model=self.user_data[chat_id]['vehicle_model'])
             self.bot.send_message(chat_id, "Марка автомобиля успешно обновлена.")
-
+            del self.user_data[chat_id]
         except Exception as e:
             logging.error(f"Ошибка обновления марки автомобиля: {e}")
             return self.bot.send_message(chat_id, f"Ошибка обновления марки автомобиля: {e}")
 
     def update_vehicle_number(self, message):
         chat_id = message.chat.id
+        if chat_id not in self.user_data:
+            self.user_data[chat_id] = {}
         try:
             self.user_data[chat_id]['vehicle_number'] = message.text
             self.db.update_user(chat_id=chat_id, vehicle_number=self.user_data[chat_id]['vehicle_number'])
             self.bot.send_message(chat_id, "Номер автомобиля успешно обновлен.")
-
+            del self.user_data[chat_id]
         except Exception as e:
             logging.error(f"Ошибка обновления номера автомобиля: {e}")
             return self.bot.send_message(chat_id, f"Ошибка обновления номера автомобиля: {e}")
