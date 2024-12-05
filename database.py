@@ -6,7 +6,7 @@ import openpyxl
 class Database:
     def __init__(self):
         # Подключение к базе данных
-        self.conn = sqlite3.connect('parking.db', check_same_thread=False)
+        self.conn = sqlite3.connect('Database/parking.db', check_same_thread=False)
         # Курсор взаимодействия с БД
         self.cursor = self.conn.cursor()
         self.create_reminders_table()
