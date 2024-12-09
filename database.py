@@ -62,6 +62,6 @@ class Database:
         """
         df = pd.read_sql(query, self.conn, params=(month_str, year))
         print(f"Результат sql запроса: {df}")
-        file_path = '/Users/pavelslykov/PycharmProjects/Parking_bot/result.xlsx'
+        file_path = 'Database/result.xlsx'
         df.to_excel(file_path, index=False)
         return file_path
