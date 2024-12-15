@@ -115,7 +115,7 @@ class Bot_commands:
             chat_id = callback_query.message.chat.id
             user_name = callback_query.data.split('_')[1]
             try:
-                self.users_functions.delete_user(user_name)
+                self.users_functions.delete_user_and_reminders(user_name, chat_id)
                 self.bot.send_message(chat_id, "Пользователь успешно удалён")
             except Exception as e:
                 logging.error(f"Ошибка при удалении пользователя: {e}")

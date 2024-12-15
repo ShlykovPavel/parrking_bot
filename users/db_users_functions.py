@@ -56,13 +56,18 @@ class db_users_functions(Database):
                 logging.error(f"Ошибка обновления пользователя в БД: {e}")
                 return False
 
-    def delete_user(self, username):
+    def delete_user_and_reminders(self, username, chat_id):
         try:
             self.cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
             if self.cursor.fetchone() is not None:
                 self.cursor.execute('DELETE FROM users WHERE username = ?', (username,))
                 self.conn.commit()
-                return True
+
+            reminders = self.cursor.execute('SELECT * FROM reminders WHERE chat_id = ?', (chat_id,))
+            if reminders.fetchone() is not None:
+                self.cursor.execute('DELETE FROM reminders WHERE chat_id = ?', (chat_id,))
+                self.conn.commit()
+            return True
         except Exception as e:
             logging.error(f"Ошибка удаления пользователя из БД: {e}")
             return False

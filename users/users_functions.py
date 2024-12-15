@@ -41,9 +41,9 @@ class users_functions:
         except Exception as e:
             return "Ошибка обновления пользователя: " + str(e)
 
-    def delete_user(self, username):
+    def delete_user_and_reminders(self, username, chat_id):
         try:
-            self.db.delete_user(username=username)
+            self.db.delete_user_and_reminders(username=username, chat_id=chat_id)
             return True
         except Exception as e:
             return "Ошибка удаления пользователя: " + str(e)
