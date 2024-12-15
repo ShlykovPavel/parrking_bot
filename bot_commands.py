@@ -2,6 +2,8 @@ import logging
 import os
 
 from telebot import types
+
+from admin_pass import Administrate
 from parking_record.parking_functions import parking_functions
 from reminder.reminder_functions import reminder_functions
 from database import Database
@@ -23,6 +25,19 @@ class Bot_commands:
         self.users_functions = users_functions(self.bot, user_data)
         self.reminder_functions = reminder_functions(self.bot, user_data)
         self.parking_functions = parking_functions(self.bot, user_data)
+        self.administrate = Administrate(self.bot)
+
+    def admin_only(self, func):
+        def wrapper(message, *args, **kwargs):
+            chat_id = message.chat.id
+            self.bot.send_message(chat_id, "Введите пароль администратора")
+            # Передаем обработчик для проверки пароля
+            self.bot.register_next_step_handler(
+                message,
+                lambda msg: self.administrate.check_password_and_execute(msg, func, *args, **kwargs)
+            )
+
+        return wrapper
 
     def register_handlers(self):
         # Обработчик команды /start
@@ -38,6 +53,7 @@ class Bot_commands:
                 self.bot.register_next_step_handler(message, self.users_functions.get_name)
 
         @self.bot.message_handler(commands=['change_user'])
+        @self.admin_only
         def change_user(message):
             chat_id = message.chat.id
             check = self.users_functions.check_users(chat_id)
@@ -68,6 +84,7 @@ class Bot_commands:
                                                     lambda msg: self.users_functions.update_vehicle_number(msg))
 
         @self.bot.message_handler(commands=['delete_user'])
+        @self.admin_only
         def delete_user(message):
             chat_id = message.chat.id
             try:
@@ -89,6 +106,8 @@ class Bot_commands:
             except Exception as e:
                 logging.error(f"Ошибка при удалении пользователя: {e}")
                 self.bot.send_message(chat_id, "Произошла ошибка при удалении пользователя")
+            else:
+                pass
 
         @self.bot.callback_query_handler(func=lambda call: call.data.startswith('username_'))
         def delete_user_from_db(callback_query):
@@ -177,6 +196,7 @@ class Bot_commands:
                 self.bot.send_message(chat_id, "Ошибка добавления записи: " + str(e))
 
         @self.bot.message_handler(commands=['get_table'])
+        @self.admin_only
         def get_table(message):
             chat_id = message.chat.id
 
