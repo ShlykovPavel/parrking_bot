@@ -139,3 +139,10 @@ class users_functions:
         except Exception as e:
             logging.error(f"Ошибка обновления номера автомобиля: {e}")
             return self.bot.send_message(chat_id, f"Ошибка обновления номера автомобиля: {e}")
+
+    def get_all_users_chat_ids(self):
+        try:
+            return self.db.get_all_users_chat_id()
+        except Exception as e:
+            logging.error(f"Ошибка получения пользователей из БД: {e}")
+            return False

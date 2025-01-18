@@ -1,8 +1,8 @@
 import logging
 import os
-
 from telebot import types
-
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.apihelper import ApiTelegramException
 from admin_pass import Administrate
 from parking_record.parking_functions import parking_functions
 from reminder.reminder_functions import reminder_functions
@@ -224,4 +224,87 @@ class Bot_commands:
                     self.bot.send_message(chat_id, "Пожалуйста, введите правильный год.")
                     ask_year(message)
 
+            ask_month(message)
+
+        @self.bot.message_handler(commands=['user_list'])
+        @self.admin_only
+        def get_user_list(message):
+            chat_id = message.chat.id
+            try:
+                users = self.users_functions.get_all_users()
+                if users is not False:
+                    user_list = "\n".join(f"👤 {user[0]}" for user in users)
+                    self.bot.send_message(chat_id, f"📋 Список зарегистрировавшихся пользователей:\n\n{user_list}")
+                else:
+                    self.bot.send_message(chat_id, "Нет пользователей")
+            except Exception as e:
+                logging.error(f"Ошибка при получении списка пользователей: {e}")
+                self.bot.send_message(chat_id, "Произошла ошибка при получении списка пользователей")
+
+        @self.bot.message_handler(commands=['send_everyone'])
+        @self.admin_only
+        def send_everyone(message):
+            chat_id = message.chat.id
+            try:
+                users = self.users_functions.get_all_users_chat_ids()
+                if users is not False:
+                    for user in users:
+                        user_name = user[0]  # Получаем chat_id пользователя
+                        # Создание Inline-клавиатуры с кнопками
+                        keyboard = InlineKeyboardMarkup()
+                        yes_button = InlineKeyboardButton(text="Да", callback_data=f"reminder_yes")
+                        no_button = InlineKeyboardButton(text="Нет", callback_data=f"reminder_no")
+                        keyboard.add(yes_button, no_button)
+
+                        try:
+                            self.bot.send_message(user_name, 'Ты сегодня ставил машину на парковку?',
+                                                  reply_markup=keyboard)
+                            logging.info(f"Напоминание отправлено пользователю {user_name}")
+                        except ApiTelegramException as e:
+                            if "bot was blocked by the user" in str(e):
+                                logging.warning(
+                                    f"Напоминание не отправлено. Пользователь {user_name} заблокировал бота.")
+                            else:
+                                logging.error(f"Ошибка при отправке сообщения пользователю {user_name}: {e}")
+                else:
+                    self.bot.send_message(chat_id, "Нет пользователей")
+            except Exception as e:
+                logging.error(f"Ошибка при отправке напоминаний: {e}")
+                self.bot.send_message(chat_id, "Произошла ошибка при отправке напоминаний")
+
+        @self.bot.message_handler(commands=['get_parking_records'])
+        def get_user_parking_records(message):
+            chat_id = message.chat.id
+
+            def ask_month(message):
+                self.bot.send_message(chat_id, "Введите номер месяца в формате ММ (например, 01 для января)")
+                self.bot.register_next_step_handler(message, process_month)
+
+            def process_month(message):
+                try:
+                    month = int(message.text)
+                    if month < 1 or month > 12:
+                        raise ValueError("Месяц должен быть числом от 1 до 12")
+
+                    # Получаем записи о парковке за этот месяц
+                    records = self.parking_functions.get_user_parking_records(chat_id, month)
+
+                    if records:
+                        # Если записи есть, показываем их пользователю
+                        result = "\n".join(
+                            [record[0] for record in records])  # Предполагаем, что записанные даты в формате строки
+                        self.bot.send_message(chat_id, f"Записи о парковке за месяц {month}:\n{result}")
+                    else:
+                        # Если записей нет
+                        self.bot.send_message(chat_id, f"Нет записей о парковке за месяц {month}.")
+                except ValueError as ve:
+                    # Обработка ошибки валидации (например, пользователь ввёл не число)
+                    self.bot.send_message(chat_id, f"Ошибка: неправильный формат даты. Попробуйте снова.")
+                    logging.error(f"Ошибка валидации введённого времени при запросе записей о парковке пользователя {chat_id}: {ve}")
+                except Exception as e:
+                    logging.error(f"Ошибка получения данных о парковке: {e}")
+                    self.bot.send_message(chat_id,
+                                          "Произошла ошибка при получении данных о парковке. Попробуйте снова.")
+
+            # Начинаем с запроса месяца
             ask_month(message)

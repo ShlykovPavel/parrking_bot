@@ -2,6 +2,7 @@ import logging
 from parking_record.db_parking_functions import db_parking_functions
 from reminder.reminder_validator import *
 
+
 class parking_functions:
     def __init__(self, bot, user_data):
         self.bot = bot
@@ -39,3 +40,11 @@ class parking_functions:
             # Ловим другие ошибки и логируем их
             logging.error(f"Ошибка добавления записи: {e}")
             return self.bot.send_message(chat_id, str(e))
+
+    def get_user_parking_records(self, chat_id, mounth):
+        try:
+            result = self.db.get_user_parking_records(chat_id, mounth)
+            return result
+        except Exception as e:
+            logging.error(f"Ошибка получения записей о парковке: {e}")
+            raise Exception("Ошибка получения записей о парковке: " + str(e))

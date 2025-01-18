@@ -69,3 +69,35 @@ class db_parking_functions(Database):
         except Exception as e:
             logging.info(f"Ошибка проверки наличия записи о парковке в БД: {e}")
             raise Exception("Ошибка проверки наличия записи о парковке: " + str(e))
+
+    import datetime
+
+    def get_user_parking_records(self, chat_id, month):
+        try:
+            # Получаем текущий год
+            current_year = datetime.now().year
+            # Форматируем месяц, например, 1 -> '01'
+            month_str = f"{month:02d}"
+
+            # SQL запрос, который фильтрует по году (текущий год)
+            query = '''
+                SELECT date_parking 
+                FROM parking_records 
+                WHERE chat_id = ? AND 
+                      date_parking LIKE ?
+            '''
+            # Формируем запрос, чтобы искать записи, содержащие текущий год
+            result = self.db_cursor.execute(query, (chat_id, f"%{current_year}%")).fetchall()
+
+            # Фильтруем результат по месяцу в Python
+            filtered_result = [record for record in result if record[0][3:5] == month_str]
+
+            if filtered_result:
+                logging.info(f'Результат sql запроса записей парковки пользователя {chat_id}: {filtered_result}')
+                return filtered_result
+            else:
+                logging.info(f'Записей о парковке за месяц {month_str} для пользователя {chat_id} не найдено.')
+                return None  # В случае отсутствия данных, возвращаем None
+        except Exception as e:
+            logging.error(f"Ошибка получения записей о парковке: {e}")
+            raise Exception("Ошибка получения записей о парковке: " + str(e))

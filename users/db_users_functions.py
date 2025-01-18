@@ -79,3 +79,11 @@ class db_users_functions(Database):
         except Exception as e:
             logging.error(f"Ошибка получения пользователей из БД: {e}")
             return False
+
+    def get_all_users_chat_id(self):
+        try:
+            self.cursor.execute('SELECT chat_id FROM users')
+            return self.cursor.fetchall()
+        except Exception as e:
+            logging.error(f"Ошибка получения пользователей из БД: {e}")
+            return False
