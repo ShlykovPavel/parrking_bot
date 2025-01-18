@@ -5,6 +5,7 @@ from functools import partial
 import schedule
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import holidays
+from telebot.apihelper import ApiTelegramException
 
 
 def check_reminders(bot, db_cursor, country_code='RU'):
@@ -32,8 +33,14 @@ def check_reminders(bot, db_cursor, country_code='RU'):
         no_button = InlineKeyboardButton(text="Нет", callback_data=f"reminder_no")
         keyboard.add(yes_button, no_button)
 
-        # Отправляем сообщение с клавиатурой
-        bot.send_message(chat_id, reminder_message, reply_markup=keyboard)
+        try:
+            bot.send_message(chat_id, reminder_message, reply_markup=keyboard)
+            logging.info(f"Напоминание отправлено пользователю {chat_id}")
+        except ApiTelegramException as e:
+            if "bot was blocked by the user" in str(e):
+                logging.warning(f"Напоминание не отправлено. Пользователь {chat_id} заблокировал бота.")
+            else:
+                logging.error(f"Ошибка при отправке сообщения пользователю {chat_id}: {e}")
 
 
 def run_scheduler(bot, db_cursor):
