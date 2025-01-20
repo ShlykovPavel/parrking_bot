@@ -1,6 +1,23 @@
+import os
 import sqlite3
 import pandas as pd
 import openpyxl
+
+
+def ensure_db_exists(db_path):
+    # Извлекаем имя папки из пути к файлу базы данных
+    folder_path = os.path.dirname(db_path)
+
+    # Проверяем, существует ли папка; если нет, создаём её
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Папка '{folder_path}' создана.")
+
+    # Проверяем, существует ли файл базы данных; если нет, создаём его
+    if not os.path.exists(db_path):
+        conn = sqlite3.connect(db_path)
+        conn.close()  # Закрываем соединение, чтобы файл базы данных был создан
+        print(f"Файл базы данных '{db_path}' создан.")
 
 
 class Database:

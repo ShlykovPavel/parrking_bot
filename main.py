@@ -5,13 +5,15 @@ from bot_commands import Bot_commands
 from reminder.remind_schedule import run_scheduler
 import os
 from dotenv import load_dotenv
-
+from database import ensure_db_exists
+db_path = 'Database/parking.db'
 load_dotenv()
 # Инициализация бота
 bot_api = os.getenv('Bot_api')
 bot = telebot.TeleBot(bot_api)
 
 # Создание подключения к базе данных
+ensure_db_exists(db_path)
 conn = sqlite3.connect('Database/parking.db', check_same_thread=False)
 db_cursor = conn.cursor()
 
