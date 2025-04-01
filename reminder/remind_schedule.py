@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 from datetime import datetime
 from functools import partial
@@ -44,8 +45,12 @@ def check_reminders(bot, db_cursor, country_code='RU'):
 
 
 def run_scheduler(bot, db_cursor):
-    schedule.every(1).minutes.do(partial(check_reminders, bot, db_cursor))
+    try:
+        schedule.every(1).minutes.do(partial(check_reminders, bot, db_cursor))
 
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
+        while True:
+            schedule.run_pending()
+            time.sleep(30)
+    except Exception as e:
+        logging.error(f"Произошла ошибка в потоке планировщика бота: {e}\n Аварийное завершение бота")
+        sys.exit(1)

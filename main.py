@@ -1,3 +1,5 @@
+import logging
+import sys
 import telebot
 import threading
 import sqlite3
@@ -6,6 +8,8 @@ from reminder.remind_schedule import run_scheduler
 import os
 from dotenv import load_dotenv
 from database import ensure_db_exists
+
+
 db_path = 'Database/parking.db'
 load_dotenv()
 # Инициализация бота
@@ -23,17 +27,25 @@ bot_commands.register_handlers()
 
 # Функция для запуска бота
 def run_bot():
-    print("Запуск бота...")
-    bot.infinity_polling()
+    try:
+        print("Запуск бота...")
+        bot.infinity_polling()
+    except Exception as e:
+        logging.error(f"Произошла ошибка в основном потоке бота: {e}\n Аварийное завершение бота")
+        sys.exit(1)
 
 if __name__ == '__main__':
     # Создание потоков для бота и планировщика
-    bot_thread = threading.Thread(target=run_bot)
-    scheduler_thread = threading.Thread(target=run_scheduler, args=(bot, db_cursor))
+    try:
+        bot_thread = threading.Thread(target=run_bot)
+        scheduler_thread = threading.Thread(target=run_scheduler, args=(bot, db_cursor))
 
-    # Запуск потоков
-    bot_thread.start()
-    scheduler_thread.start()
+        # Запуск потоков
+        bot_thread.start()
+        scheduler_thread.start()
 
-    # Печать сообщения о запуске
-    print("Бот и планировщик запущены")
+        # Печать сообщения о запуске
+        print("Бот и планировщик запущены")
+    except Exception as e:
+        logging.error(f"Произошла ошибка в основном потоке: {e}\n Аварийное завершение бота")
+        sys.exit(1)
